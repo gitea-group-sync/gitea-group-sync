@@ -1,11 +1,11 @@
 FROM golang:1.13-alpine3.10 AS build-env
 
+#Build deps
+RUN apk --no-cache add build-base git
+
 #Setup 
 COPY . /src/gitea-group-sync
 WORKDIR /src/gitea-group-sync
-
-#Build deps
-RUN apk --no-cache add build-base git
 
 RUN go get gopkg.in/ldap.v3 && go get gopkg.in/robfig/cron.v3 && go build
 
