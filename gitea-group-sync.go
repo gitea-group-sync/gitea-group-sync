@@ -18,8 +18,8 @@ func AddUsersToTeam(apiKeys GiteaKeys, users []Account, team int) bool {
 
 	for i := 0; i < len(users); i++ {
 
-		fullusername := url.PathEscape(fmt.Sprintf("%s", users[i].Full_name))
-		apiKeys.Command = "/api/v1/users/search?q=" + fullusername + "&access_token="
+		userlogin := url.PathEscape(fmt.Sprintf("%s", users[i].Login))
+		apiKeys.Command = "/api/v1/users/search?q=" + userlogin + "&access_token="
 		foundUsers := RequestSearchResults(apiKeys)
 
 		for j := 0; j < len(foundUsers.Data); j++ {
