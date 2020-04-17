@@ -98,16 +98,26 @@ func mainJob() {
 	}
 
 	var ldapPort int
+	var ldapTls bool
 	if len(os.Getenv("LDAP_TLS_PORT")) > 0 {
 		port, err := strconv.Atoi(os.Getenv("LDAP_TLS_PORT"))
 		ldapPort = port
+		ldapTls = true
 		log.Printf("DialTLS:=%v:%d", ldapUrl, ldapPort)
 		if err != nil {
 			log.Println("LDAP_TLS_PORT is invalid.")
 		}
 	} else {
-		log.Println("LDAP_TLS_PORT is empty")
-	}
+		if len(os.Getenv("LDAP_PORT")) > 0 {
+			port, err := strconv.Atoi(os.Getenv("LDAP_PORT"))
+			ldapPort = port
+			ldapTls = false
+			log.Printf("Dial:=%v:%d", ldapUrl, ldapPort)
+			if err != nil {
+				log.Println("LDAP_PORT is invalid.")
+			}
+		}
+}
 
 	var ldapbindDN string
 	if len(os.Getenv("BIND_DN")) == 0 {
@@ -137,7 +147,14 @@ func mainJob() {
 		ldapUserSearchBase = os.Getenv("LDAP_USER_SEARCH_BASE")
 	}
 
-	l, err := ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort), &tls.Config{InsecureSkipVerify: true})
+  var l *ldap.Conn
+	var err error
+  if ldapTls {
+		l, err = ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort), &tls.Config{InsecureSkipVerify: true})
+	} else {
+		l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort))
+	}
+
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Please set the correct values for all specifics.")
