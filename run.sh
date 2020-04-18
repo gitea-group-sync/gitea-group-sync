@@ -7,5 +7,6 @@ export BIND_DN='cn=admin,dc=planetexpress,dc=com'
 export BIND_PASSWORD=GoodNewsEveryone
 export LDAP_FILTER='(&(objectClass=person)(memberOf=cn=%s,ou=people,dc=planetexpress,dc=com))'
 export LDAP_USER_SEARCH_BASE='ou=people,dc=planetexpress,dc=com'
+export LDAP_USER_LOGIN_ATTRIBUTE='uid'
 export REP_TIME='@every 1m'
 go run .
