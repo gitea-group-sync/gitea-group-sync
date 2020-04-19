@@ -3,7 +3,7 @@ services:
   group-sync:
     container_name: gitea-group-sync
     build: .
-    image: totalweb/gitea-group-sync:0.1
+    image: totalweb/gitea-group-sync:0.2
     environment:
       GITEA_TOKEN: c00c810bb668c63ce7cd8057411d2f560eac469c
       GITEA_URL: http://192.168.2.2:3000
@@ -13,5 +13,4 @@ services:
       BIND_PASSWORD: GoodNewsEveryone
       LDAP_FILTER: (&(objectClass=person)(memberOf=cn=%s,ou=people,dc=planetexpress,dc=com))
       LDAP_USER_SEARCH_BASE: 'ou=people,dc=planetexpress,dc=com'
-      LDAP_USER_LOGIN_ATTRIBUTE: uid
       REP_TIME: '@every 1m'

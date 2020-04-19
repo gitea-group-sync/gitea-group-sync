@@ -18,8 +18,8 @@ func AddUsersToTeam(apiKeys GiteaKeys, users []Account, team int) bool {
 
 	for i := 0; i < len(users); i++ {
 
-		userlogin := url.PathEscape(fmt.Sprintf("%s", users[i].Login))
-		apiKeys.Command = "/api/v1/users/search?q=" + userlogin + "&access_token="
+		fullusername := url.PathEscape(fmt.Sprintf("%s", users[i].Full_name))
+		apiKeys.Command = "/api/v1/users/search?q=" + fullusername + "&access_token="
 		foundUsers := RequestSearchResults(apiKeys)
 
 		for j := 0; j < len(foundUsers.Data); j++ {
@@ -147,17 +147,26 @@ func mainJob() {
 		ldapUserSearchBase = os.Getenv("LDAP_USER_SEARCH_BASE")
 	}
 
-	var ldapUserLoginAttribute string
-	if len(os.Getenv("LDAP_USER_LOGIN_ATTRIBUTE")) == 0 {
-		log.Println("LDAP_USER_LOGIN_ATTRIBUTE is empty")
+	var ldapUserIdentityAttribute string
+	if len(os.Getenv("LDAP_USER_IDENTITY_ATTRIBUTE")) == 0 {
+		ldapUserIdentityAttribute = "uid"
+		log.Println("By default LDAP_USER_IDENTITY_ATTRIBUTE = 'uid'")
 	} else {
-		ldapUserLoginAttribute = os.Getenv("LDAP_USER_LOGIN_ATTRIBUTE")
+		ldapUserIdentityAttribute = os.Getenv("LDAP_USER_IDENTITY_ATTRIBUTE")
+	}
+
+	var ldapUserFullName string
+	if len(os.Getenv("LDAP_USER_FULL_NAME")) == 0 {
+		ldapUserFullName = "sn" //change to cn if you need it
+		log.Println("By default LDAP_USER_FULL_NAME = 'sn'")
+	} else {
+		ldapUserIdentityAttribute = os.Getenv("LDAP_USER_FULL_NAME")
 	}
 
 	var l *ldap.Conn
 	var err error
 	if ldapTls {
-		l, err = ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort), &tls.Config{InsecureSkipVerify: true}) // TODO: move skip verify to environment variable
+		l, err = ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort), &tls.Config{InsecureSkipVerify: true})
 	} else {
 		l, err = ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldapUrl, ldapPort))
 	}
@@ -202,7 +211,7 @@ func mainJob() {
 					ldapUserSearchBase, // The base dn to search
 					ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 					filter, // The filter to apply
-					[]string{"cn", "uid", "mailPrimaryAddress, sn", ldapUserLoginAttribute}, // A list attributes to retrieve
+					[]string{"cn", "uid", "mailPrimaryAddress, sn", ldapUserIdentityAttribute}, // A list attributes to retrieve
 					nil,
 				)
 				// make request to ldap server
@@ -217,9 +226,9 @@ func mainJob() {
 					log.Printf("The LDAP %s has %d users corresponding to team %s", ldapUrl, len(sr.Entries), teamList[j].Name)
 					for _, entry := range sr.Entries {
 
-						AccountsLdap[entry.GetAttributeValue(ldapUserLoginAttribute)] = Account{
-							Full_name: entry.GetAttributeValue("sn"),  //change to cn if you need it
-							Login:     entry.GetAttributeValue(ldapUserLoginAttribute),
+						AccountsLdap[entry.GetAttributeValue(ldapUserIdentityAttribute)] = Account{
+							Full_name: entry.GetAttributeValue(ldapUserFullName),
+							Login:     entry.GetAttributeValue(ldapUserIdentityAttribute),
 						}
 					}
 
