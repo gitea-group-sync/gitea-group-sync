@@ -160,7 +160,7 @@ func mainJob() {
 		ldapUserFullName = "sn" //change to cn if you need it
 		log.Println("By default LDAP_USER_FULL_NAME = 'sn'")
 	} else {
-		ldapUserIdentityAttribute = os.Getenv("LDAP_USER_FULL_NAME")
+		ldapUserFullName = os.Getenv("LDAP_USER_FULL_NAME")
 	}
 
 	var l *ldap.Conn
