@@ -12,7 +12,7 @@ import (
 )
 
 import "gopkg.in/ldap.v3"
-import "gopkg.in/robfig/cron.v3"
+import "github.com/robfig/cron/v3"
 
 func AddUsersToTeam(apiKeys GiteaKeys, users []Account, team int) bool {
 
