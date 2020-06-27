@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine3.10 AS build-env
+FROM golang:1.14-alpine3.12 AS build-env
 
 #Build deps
 RUN apk --no-cache add build-base git
@@ -7,10 +7,10 @@ RUN apk --no-cache add build-base git
 COPY . /src/gitea-group-sync
 WORKDIR /src/gitea-group-sync
 
-RUN go get gopkg.in/ldap.v3 && go get gopkg.in/robfig/cron.v3 && go build
+RUN go get -d -v && go build
 
 # Final
-FROM alpine:3.10
+FROM alpine:3.12
 
 COPY --from=build-env /src/gitea-group-sync/gitea-group-sync /app/gitea-group-sync/gitea-group-sync
 
