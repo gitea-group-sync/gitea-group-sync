@@ -16,7 +16,14 @@ If you configured the [Gitea](https://hub.docker.com/r/gitea/gitea) <=> [LDAP](h
 
 You need to create Manage Access Tokens and add key to run.sh or docker-compose.yml the configuration file
 
+##### Configuration: 
+There are two ways to configure the application. Via YAML Configuration File or Enviroment Variables. 
+- See `run.sh` for an example using the enviroment Variables. 
+- Use `./gitea-group-sync --config="config.yaml"` with the example Config File for the YAML Variant.
+
+##### Gitea Tokens
 The application supports several keys, since to add people to the group you must be the owner of the organization.
+
 
 ![](images/Image2.png)
 

@@ -1,0 +1,20 @@
+# Example Configuration for gitea-group-sync
+
+ApiKeys: 
+  TokenKey: 
+    - "c00c810bb668c63ce7cd8057411d2f560eac469c,2c02df6959d012dee8f5da3539f63223417c4bbe"
+  BaseUrl: "http://localhost:3200"
+
+# LDAP Config
+LdapURL: "localhost"
+LdapPort: 639
+LdapTLS: false
+LdapBindDN: "cn=admin,dc=planetexpress,dc=com"
+LdapBindPassword: "GoodNewsEveryone"
+LdapFilter: '(&(objectClass=person)(memberOf=cn=%s,ou=people,dc=planetexpress,dc=com))'
+LdapUserSearchBase: 'ou=people,dc=planetexpress,dc=com'
+ReqTime: '@every 1m'
+LdapUserIdentityAttribute: "uid"
+LdapUserFullName: "sn"    # can be changed to "cn" if needed
+
+
