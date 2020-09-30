@@ -81,27 +81,20 @@ func importEnvVars() Config {
 
 	// Create temporary structs for creating the final config
 	envConfig := Config{}
+
+	// ApiKeys
 	envConfig.ApiKeys = GiteaKeys{}
+	envConfig.ApiKeys.TokenKey = strings.Split(os.Getenv("GITEA_TOKEN"), ",")
+	envConfig.ApiKeys.BaseUrl = os.Getenv("GITEA_URL")
 
-	// Start parsing env. Variables
-	if len(os.Getenv("GITEA_TOKEN")) < 40 { // get on  https://[web_site_url]/user/settings/applications
-		log.Println("GITEA_TOKEN is empty or invalid.")
-	} else {
-		envConfig.ApiKeys.TokenKey = strings.Split(os.Getenv("GITEA_TOKEN"), ",")
-	}
+	// LDAP Config
+	envConfig.LdapURL = os.Getenv("LDAP_URL")
+	envConfig.LdapBindDN = os.Getenv("BIND_DN")
+	envConfig.LdapBindPassword = os.Getenv("BIND_PASSWORD")
+	envConfig.LdapFilter = os.Getenv("LDAP_FILTER")
+	envConfig.LdapUserSearchBase = os.Getenv("LDAP_USER_SEARCH_BASE")
 
-	if len(os.Getenv("GITEA_URL")) == 0 {
-		log.Println("GITEA_URL is empty")
-	} else {
-		envConfig.ApiKeys.BaseUrl = os.Getenv("GITEA_URL")
-	}
-
-	if len(os.Getenv("LDAP_URL")) == 0 {
-		log.Println("LDAP_URL is empty")
-	} else {
-		envConfig.LdapURL = os.Getenv("LDAP_URL")
-	}
-
+	// Check TLS Settings
 	if len(os.Getenv("LDAP_TLS_PORT")) > 0 {
 		port, err := strconv.Atoi(os.Getenv("LDAP_TLS_PORT"))
 		envConfig.LdapPort = port
@@ -121,31 +114,7 @@ func importEnvVars() Config {
 			}
 		}
 	}
-
-	if len(os.Getenv("BIND_DN")) == 0 {
-		log.Println("BIND_DN is empty")
-	} else {
-		envConfig.LdapBindDN = os.Getenv("BIND_DN")
-	}
-
-	if len(os.Getenv("BIND_PASSWORD")) == 0 {
-		log.Println("BIND_PASSWORD is empty")
-	} else {
-		envConfig.LdapBindPassword = os.Getenv("BIND_PASSWORD")
-	}
-
-	if len(os.Getenv("LDAP_FILTER")) == 0 {
-		log.Println("LDAP_FILTER is empty")
-	} else {
-		envConfig.LdapFilter = os.Getenv("LDAP_FILTER")
-	}
-
-	if len(os.Getenv("LDAP_USER_SEARCH_BASE")) == 0 {
-		log.Println("LDAP_USER_SEARCH_BASE is empty")
-	} else {
-		envConfig.LdapUserSearchBase = os.Getenv("LDAP_USER_SEARCH_BASE")
-	}
-
+	// Set defaults for user Attributes
 	if len(os.Getenv("LDAP_USER_IDENTITY_ATTRIBUTE")) == 0 {
 		envConfig.LdapUserIdentityAttribute = "uid"
 		log.Println("By default LDAP_USER_IDENTITY_ATTRIBUTE = 'uid'")
@@ -181,6 +150,43 @@ func importYAMLConfig(path string) (Config, error) {
 	return cfg, nil
 }
 
+func (c Config) checkConfig() {
+	if len(c.ApiKeys.TokenKey) <= 0 {
+		log.Println("GITEA_TOKEN is empty or invalid.")
+	}
+	if len(c.ApiKeys.BaseUrl) == 0 {
+		log.Println("GITEA_URL is empty")
+	}
+	if len(c.LdapURL) == 0 {
+		log.Println("LDAP_URL is empty")
+	}
+	if c.LdapPort <= 0 {
+		log.Println("LDAP_TLS_PORT is invalid.")
+	} else {
+		log.Printf("DialTLS:=%v:%d", c.LdapURL, c.LdapPort)
+	}
+	if len(c.LdapBindDN) == 0 {
+		log.Println("BIND_DN is empty")
+	}
+	if len(c.LdapBindPassword) == 0 {
+		log.Println("BIND_PASSWORD is empty")
+	}
+	if len(c.LdapFilter) == 0 {
+		log.Println("LDAP_FILTER is empty")
+	}
+	if len(c.LdapUserSearchBase) == 0 {
+		log.Println("LDAP_USER_SEARCH_BASE is empty")
+	}
+	if len(c.LdapUserIdentityAttribute) == 0 {
+		c.LdapUserIdentityAttribute = "uid"
+		log.Println("By default LDAP_USER_IDENTITY_ATTRIBUTE = 'uid'")
+	}
+	if len(c.LdapUserFullName) == 0 {
+		c.LdapUserFullName = "sn" //change to cn if you need it
+		log.Println("By default LDAP_USER_FULL_NAME = 'sn'")
+	}
+}
+
 func mainJob() {
 
 	//------------------------------
@@ -196,6 +202,9 @@ func mainJob() {
 		log.Println("Successfully imported YAML Config from " + *configFlag)
 		fmt.Println(cfg)
 	}
+	// Checks Config
+	cfg.checkConfig()
+	log.Println("Checked config elements")
 
 	// Prepare LDAP Connection
 	var l *ldap.Conn

@@ -50,7 +50,7 @@ type GiteaKeys struct {
 // Config describes the settings of the application. This structure is used in the settings-import process
 type Config struct {
 	ApiKeys                   GiteaKeys `yaml:"ApiKeys"`
-	LdapURL                   string    `yaml:"ldapurl"`
+	LdapURL                   string    `yaml:"LdapURL"`
 	LdapPort                  int       `yaml:"LdapPort"`
 	LdapTLS                   bool      `yaml:"LdapTLS"`
 	LdapBindDN                string    `yaml:"LdapBindDN"`
@@ -60,4 +60,4 @@ type Config struct {
 	ReqTime                   string    `yaml:"ReqTime"`
 	LdapUserIdentityAttribute string    `yaml:"LdapUserIdentityAttribute"`
 	LdapUserFullName          string    `yaml:"LdapUserFullName"`
-}
+} //!TODO! Implement check if valid
