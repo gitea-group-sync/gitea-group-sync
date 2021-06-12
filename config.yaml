@@ -9,6 +9,7 @@ ApiKeys:
 LdapURL: "localhost"
 LdapPort: 639
 LdapTLS: false
+# LdapBindDN is optional, if unset we will do an anonymous bind 
 LdapBindDN: "cn=admin,dc=planetexpress,dc=com"
 LdapBindPassword: "GoodNewsEveryone"
 LdapFilter: '(&(objectClass=person)(memberOf=cn=%s,ou=people,dc=planetexpress,dc=com))'
