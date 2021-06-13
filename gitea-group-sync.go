@@ -165,7 +165,7 @@ func (c Config) checkConfig() {
 	} else {
 		log.Printf("DialTLS:=%v:%d", c.LdapURL, c.LdapPort)
 	}
-	if (len(c.LdapBindDN) > 0 && len(c.LdapBindPassword) == 0) {
+	if len(c.LdapBindDN) > 0 && len(c.LdapBindPassword) == 0 {
 		log.Println("BIND_DN supplied, but BIND_PASSWORD is empty")
 	}
 	if len(c.LdapFilter) == 0 {
@@ -219,12 +219,12 @@ func mainJob() {
 	}
 	defer l.Close()
 
-        if len(cfg.LdapBindDN) == 0 {
-	   err = l.UnauthenticatedBind("")
+	if len(cfg.LdapBindDN) == 0 {
+		err = l.UnauthenticatedBind("")
 	} else {
-	  err = l.Bind(cfg.LdapBindDN, cfg.LdapBindPassword)
+		err = l.Bind(cfg.LdapBindDN, cfg.LdapBindPassword)
 	}
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -236,7 +236,7 @@ func mainJob() {
 
 	log.Printf("%d organizations were found on the server: %s", len(organizationList), cfg.ApiKeys.BaseUrl)
 
-	for 1 < len(organizationList) {
+	for 0 < len(organizationList) {
 
 		for i := 0; i < len(organizationList); i++ {
 
