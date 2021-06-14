@@ -165,11 +165,8 @@ func (c Config) checkConfig() {
 	} else {
 		log.Printf("DialTLS:=%v:%d", c.LdapURL, c.LdapPort)
 	}
-	if len(c.LdapBindDN) == 0 {
-		log.Println("BIND_DN is empty")
-	}
-	if len(c.LdapBindPassword) == 0 {
-		log.Println("BIND_PASSWORD is empty")
+	if len(c.LdapBindDN) > 0 && len(c.LdapBindPassword) == 0 {
+		log.Println("BIND_DN supplied, but BIND_PASSWORD is empty")
 	}
 	if len(c.LdapFilter) == 0 {
 		log.Println("LDAP_FILTER is empty")
@@ -222,10 +219,16 @@ func mainJob() {
 	}
 	defer l.Close()
 
-	err = l.Bind(cfg.LdapBindDN, cfg.LdapBindPassword)
+	if len(cfg.LdapBindDN) == 0 {
+		err = l.UnauthenticatedBind("")
+	} else {
+		err = l.Bind(cfg.LdapBindDN, cfg.LdapBindPassword)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	page := 1
 	cfg.ApiKeys.BruteforceTokenKey = 0
 	cfg.ApiKeys.Command = "/api/v1/admin/orgs?page=" + fmt.Sprintf("%d", page) + "&limit=20&access_token=" // List all organizations
@@ -233,7 +236,7 @@ func mainJob() {
 
 	log.Printf("%d organizations were found on the server: %s", len(organizationList), cfg.ApiKeys.BaseUrl)
 
-	for 1 < len(organizationList) {
+	for 0 < len(organizationList) {
 
 		for i := 0; i < len(organizationList); i++ {
 
