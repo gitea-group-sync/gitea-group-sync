@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	//	"reflect"
 	"net"
 	"net/url"
@@ -34,11 +35,11 @@ func hasTimedOut(err error) bool {
 		if err, ok := err.Err.(net.Error); ok && err.Timeout() {
 			return true
 		}
-	case net.Error:
+	case *net.OpError:
 		if err.Timeout() {
 			return true
 		}
-	case *net.OpError:
+	case net.Error:
 		if err.Timeout() {
 			return true
 		}
@@ -73,6 +74,9 @@ func RequestPut(apiKeys GiteaKeys) []byte {
 	cc := &http.Client{Timeout: time.Second * 2}
 	url := apiKeys.BaseUrl + apiKeys.Command + apiKeys.TokenKey[apiKeys.BruteforceTokenKey]
 	request, err := http.NewRequest("PUT", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	res, err := cc.Do(request)
 	CheckStatusCode(res)
 	if err != nil && hasTimedOut(err) {
@@ -92,6 +96,9 @@ func RequestDel(apiKeys GiteaKeys) []byte {
 	cc := &http.Client{Timeout: time.Second * 2}
 	url := apiKeys.BaseUrl + apiKeys.Command + apiKeys.TokenKey[apiKeys.BruteforceTokenKey]
 	request, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	res, err := cc.Do(request)
 	CheckStatusCode(res)
 	if err != nil && hasTimedOut(err) {
@@ -121,7 +128,7 @@ func RequestSearchResults(ApiKeys GiteaKeys) SearchResults {
 func RequestUsersList(ApiKeys GiteaKeys) (map[string]Account, int) {
 
 	b := RequestGet(ApiKeys)
-	var Account_u = make(map[string]Account)
+	var AccountU = make(map[string]Account)
 
 	var f []Account
 	jsonErr := json.Unmarshal(b, &f)
@@ -135,19 +142,19 @@ func RequestUsersList(ApiKeys GiteaKeys) (map[string]Account, int) {
 		if ApiKeys.BruteforceTokenKey < len(ApiKeys.TokenKey)-1 {
 			ApiKeys.BruteforceTokenKey++
 			log.Printf("BruteforceTokenKey=%d", ApiKeys.BruteforceTokenKey)
-			Account_u, ApiKeys.BruteforceTokenKey = RequestUsersList(ApiKeys)
+			AccountU, ApiKeys.BruteforceTokenKey = RequestUsersList(ApiKeys)
 		}
 	}
 
 	for i := 0; i < len(f); i++ {
-		Account_u[f[i].Login] = Account{
+		AccountU[f[i].Login] = Account{
 			//			Email:     f[i].Email,
-			Id:        f[i].Id,
-			Full_name: f[i].Full_name,
-			Login:     f[i].Login,
+			ID:       f[i].ID,
+			FullName: f[i].FullName,
+			Login:    f[i].Login,
 		}
 	}
-	return Account_u, ApiKeys.BruteforceTokenKey
+	return AccountU, ApiKeys.BruteforceTokenKey
 }
 
 func RequestOrganizationList(apiKeys GiteaKeys) []Organization {
@@ -182,15 +189,5 @@ func parseJson(b []byte) interface{} {
 		log.Fatal(jsonErr)
 	}
 	m := f.(interface{})
-	return m
-}
-
-func parseJsonArray(b []byte) []interface{} {
-	var f interface{}
-	jsonErr := json.Unmarshal(b, &f)
-	if jsonErr != nil {
-		log.Fatal(jsonErr)
-	}
-	m := f.([]interface{})
 	return m
 }
