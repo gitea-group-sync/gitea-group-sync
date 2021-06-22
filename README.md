@@ -2,6 +2,8 @@
 
 This application adds users to appropriate teams in Gitea based on group membership information in LDAP.
 
+Docker image available at [ghcr.io/gitea-group-sync/gitea-group-sync](https://github.com/gitea-group-sync/gitea-group-sync/pkgs/container/gitea-group-sync).
+
 ## Installation instructions
 
 You must have configured your LDAP with gitea
