@@ -250,7 +250,7 @@ func mainJob() {
 			log.Printf("Skip synchronization in the Owners team")
 			cfg.ApiKeys.BruteforceTokenKey = 0
 
-			for j := 1; j < len(teamList); j++ {
+			for j := 0; j < len(teamList); j++ {
 
 				// preparing request to ldap server
 				filter := fmt.Sprintf(cfg.LdapFilter, teamList[j].Name)
