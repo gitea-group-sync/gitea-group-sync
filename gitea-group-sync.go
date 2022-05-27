@@ -247,7 +247,6 @@ func mainJob() {
 			cfg.ApiKeys.Command = "/api/v1/orgs/" + organizationList[i].Name + "/teams?access_token="
 			teamList := RequestTeamList(cfg.ApiKeys)
 			log.Printf("%d teams were found in %s organization", len(teamList), organizationList[i].Name)
-			log.Printf("Skip synchronization in the Owners team")
 			cfg.ApiKeys.BruteforceTokenKey = 0
 
 			for j := 0; j < len(teamList); j++ {
