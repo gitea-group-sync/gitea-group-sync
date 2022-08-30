@@ -20,7 +20,7 @@ func AddUsersToTeam(apiKeys GiteaKeys, users []Account, team int) bool {
 
 	for i := 0; i < len(users); i++ {
 
-		fullusername := url.PathEscape(fmt.Sprintf("%s", users[i].Full_name))
+		fullusername := url.PathEscape(fmt.Sprintf("%s", users[i].FullName))
 		apiKeys.Command = "/api/v1/users/search?q=" + fullusername + "&access_token="
 		foundUsers := RequestSearchResults(apiKeys)
 
@@ -42,7 +42,7 @@ func DelUsersFromTeam(apiKeys GiteaKeys, Users []Account, team int) bool {
 
 	for i := 0; i < len(Users); i++ {
 
-		apiKeys.Command = "/api/v1/users/search?uid=" + fmt.Sprintf("%d", Users[i].Id) + "&access_token="
+		apiKeys.Command = "/api/v1/users/search?uid=" + fmt.Sprintf("%d", Users[i].ID) + "&access_token="
 
 		foundUser := RequestSearchResults(apiKeys)
 
@@ -70,7 +70,7 @@ func main() {
 	c.AddFunc(repTime, mainJob)
 	c.Start()
 	fmt.Println(c.Entries())
-	for true {
+	for {
 		time.Sleep(100 * time.Second)
 	}
 }
@@ -103,15 +103,14 @@ func importEnvVars() Config {
 		if err != nil {
 			log.Println("LDAP_TLS_PORT is invalid.")
 		}
-	} else {
-		if len(os.Getenv("LDAP_PORT")) > 0 {
-			port, err := strconv.Atoi(os.Getenv("LDAP_PORT"))
-			envConfig.LdapPort = port
-			envConfig.LdapTLS = false
-			log.Printf("Dial:=%v:%d", envConfig.LdapURL, envConfig.LdapPort)
-			if err != nil {
-				log.Println("LDAP_PORT is invalid.")
-			}
+	} else if len(os.Getenv("LDAP_PORT")) > 0 {
+
+		port, err := strconv.Atoi(os.Getenv("LDAP_PORT"))
+		envConfig.LdapPort = port
+		envConfig.LdapTLS = false
+		log.Printf("Dial:=%v:%d", envConfig.LdapURL, envConfig.LdapPort)
+		if err != nil {
+			log.Println("LDAP_PORT is invalid.")
 		}
 	}
 	// Set defaults for user Attributes
@@ -151,7 +150,7 @@ func importYAMLConfig(path string) (Config, error) {
 }
 
 func (c Config) checkConfig() {
-	if len(c.ApiKeys.TokenKey) <= 0 {
+	if len(c.ApiKeys.TokenKey) == 0 {
 		log.Println("GITEA_TOKEN is empty or invalid.")
 	}
 	if len(c.ApiKeys.BaseUrl) == 0 {
@@ -242,7 +241,7 @@ func mainJob() {
 
 			log.Println(organizationList)
 
-			log.Printf("Begin an organization review: OrganizationName= %v, OrganizationId= %d \n", organizationList[i].Name, organizationList[i].Id)
+			log.Printf("Begin an organization review: OrganizationName= %v, OrganizationId= %d \n", organizationList[i].Name, organizationList[i].ID)
 
 			cfg.ApiKeys.Command = "/api/v1/orgs/" + organizationList[i].Name + "/teams?access_token="
 			teamList := RequestTeamList(cfg.ApiKeys)
@@ -273,14 +272,14 @@ func mainJob() {
 					for _, entry := range sr.Entries {
 
 						AccountsLdap[entry.GetAttributeValue(cfg.LdapUserIdentityAttribute)] = Account{
-							Full_name: entry.GetAttributeValue(cfg.LdapUserFullName),
-							Login:     entry.GetAttributeValue(cfg.LdapUserIdentityAttribute),
+							FullName: entry.GetAttributeValue(cfg.LdapUserFullName),
+							Login:    entry.GetAttributeValue(cfg.LdapUserIdentityAttribute),
 						}
 					}
 
-					cfg.ApiKeys.Command = "/api/v1/teams/" + fmt.Sprintf("%d", teamList[j].Id) + "/members?access_token="
+					cfg.ApiKeys.Command = "/api/v1/teams/" + fmt.Sprintf("%d", teamList[j].ID) + "/members?access_token="
 					AccountsGitea, cfg.ApiKeys.BruteforceTokenKey = RequestUsersList(cfg.ApiKeys)
-					log.Printf("The gitea %s has %d users corresponding to team %s Teamid=%d", cfg.ApiKeys.BaseUrl, len(AccountsGitea), teamList[j].Name, teamList[j].Id)
+					log.Printf("The gitea %s has %d users corresponding to team %s Teamid=%d", cfg.ApiKeys.BaseUrl, len(AccountsGitea), teamList[j].Name, teamList[j].ID)
 
 					for k, v := range AccountsLdap {
 						if AccountsGitea[k].Login != v.Login {
@@ -288,7 +287,7 @@ func mainJob() {
 						}
 					}
 					log.Printf("can be added users list %v", addUserToTeamList)
-					AddUsersToTeam(cfg.ApiKeys, addUserToTeamList, teamList[j].Id)
+					AddUsersToTeam(cfg.ApiKeys, addUserToTeamList, teamList[j].ID)
 
 					for k, v := range AccountsGitea {
 						if AccountsLdap[k].Login != v.Login {
@@ -296,7 +295,7 @@ func mainJob() {
 						}
 					}
 					log.Printf("must be del users list %v", delUserToTeamlist)
-					DelUsersFromTeam(cfg.ApiKeys, delUserToTeamlist, teamList[j].Id)
+					DelUsersFromTeam(cfg.ApiKeys, delUserToTeamlist, teamList[j].ID)
 
 				} else {
 					log.Printf("The LDAP %s not found users corresponding to team %s", cfg.LdapURL, teamList[j].Name)
